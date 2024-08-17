@@ -12,6 +12,7 @@
 using System;
 using System.Linq;
 using OpenRA.Activities;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits.Render
@@ -33,7 +34,7 @@ namespace OpenRA.Mods.Common.Traits.Render
 		public override object Create(ActorInitializer init) { return new WithMakeAnimation(init, this); }
 	}
 
-	public class WithMakeAnimation : INotifyCreated, INotifyDeployTriggered
+	public class WithMakeAnimation : INotifyCreated, INotifyDeployTriggered, ISaveActor
 	{
 		readonly WithMakeAnimationInfo info;
 		readonly WithSpriteBody[] wsbs;
@@ -55,6 +56,11 @@ namespace OpenRA.Mods.Common.Traits.Render
 			overlays = self.TraitsImplementing<WithMakeOverlay>().ToArray();
 			if (!skipMakeAnimation)
 				Forward(self, () => { });
+		}
+
+		void ISaveActor.SaveActor(Actor self, TypeDictionary dict)
+		{
+			dict.Add(new SkipMakeAnimsInit());
 		}
 
 		public void Forward(Actor self, Action onComplete)

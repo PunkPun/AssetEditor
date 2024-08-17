@@ -627,6 +627,24 @@ namespace OpenRA
 			Game.FinishBenchmark();
 		}
 
+		public void RecreateActors()
+		{
+			var validActors = TraitDict.ActorsHavingTrait<INotifyAddedToWorld>()
+				.Where(a => a.Owner.Playable && a.Info.Name != "player");
+
+			foreach (var actor in validActors)
+			{
+				if (actor.Disposed)
+					continue;
+
+				var inits = actor.SaveActor();
+				var producee = actor.Info;
+				AddFrameEndTask(w => CreateActor(producee.Name, inits));
+
+				actor.Dispose();
+			}
+		}
+
 		public void OutOfSync()
 		{
 			EndGame();

@@ -75,6 +75,9 @@ namespace OpenRA.Mods.Common.Commands
 		[TranslationReference]
 		const string DisposeSelectedActorsDescription = "description-dispose-selected-actors";
 
+		[TranslationReference]
+		const string ReloadActorsDescription = "description-reload-actors";
+
 		readonly IDictionary<string, (string Description, Action<string, World> Handler)> commandHandlers = new Dictionary<string, (string, Action<string, World>)>
 		{
 			{ "visibility", (ToggleVisiblityDescription, Visibility) },
@@ -91,7 +94,8 @@ namespace OpenRA.Mods.Common.Commands
 			{ "player-experience", (PlayerExperienceDescription, PlayerExperience) },
 			{ "power-outage", (PowerOutageDescription, PowerOutage) },
 			{ "kill", (KillSelectedActorsDescription, Kill) },
-			{ "dispose", (DisposeSelectedActorsDescription, Dispose) }
+			{ "reload", (ReloadActorsDescription, HotReload) },
+			{ "dispose", (DisposeSelectedActorsDescription, Dispose) },
 		};
 
 		World world;
@@ -154,6 +158,43 @@ namespace OpenRA.Mods.Common.Commands
 			}
 
 			world.IssueOrder(giveCashOrder);
+		}
+
+		static void HotReload(string arg, World world)
+		{
+			var defaultRules = world.Map.Rules;
+			if (!string.IsNullOrEmpty(arg))
+			{
+				var matchingRulesFile = Game.ModData.Manifest.Rules.FirstOrDefault(f => f.Contains(arg));
+				var matchingWeaponsFile = Game.ModData.Manifest.Weapons.FirstOrDefault(f => f.Contains(arg));
+				var matchingSequencesFile = Game.ModData.Manifest.Sequences.FirstOrDefault(f => f.Contains(arg));
+
+				if (arg.EndsWith(".yaml", StringComparison.InvariantCultureIgnoreCase))
+				{
+					if (matchingRulesFile != null)
+						defaultRules.LoadActorTraitsFromRuleFile(world, Game.ModData, matchingRulesFile);
+					if (matchingWeaponsFile != null)
+						defaultRules.LoadWeaponsFromFile(world, Game.ModData, matchingWeaponsFile);
+					if (matchingSequencesFile != null)
+						world.Map.Sequences.ReloadSequenceSetFromFiles(Game.ModData.DefaultFileSystem, matchingSequencesFile);
+					if (matchingRulesFile == null && matchingWeaponsFile == null && matchingSequencesFile == null)
+						Console.WriteLine($"Cannot find file specified - check spelling: {arg}. Reload aborted.");
+				}
+				else
+				{
+					defaultRules.LoadActorTraitsFromRulesActor(world, Game.ModData, arg);
+					defaultRules.LoadWeapon(world, Game.ModData, arg);
+					world.Map.Sequences.ReloadSequenceSetFromNode(Game.ModData.DefaultFileSystem, arg);
+				}
+			}
+			else
+			{
+				defaultRules.LoadActorTraitsFromRuleFile(world, Game.ModData);
+				defaultRules.LoadWeaponsFromFile(world, Game.ModData);
+				world.Map.Sequences.ReloadSequenceSetFromFiles(Game.ModData.DefaultFileSystem);
+			}
+
+			world.RecreateActors();
 		}
 
 		static void Visibility(string arg, World world)

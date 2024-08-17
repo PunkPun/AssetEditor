@@ -537,6 +537,13 @@ namespace OpenRA.Mods.Common.Traits
 			return Info.CanStayInCell(self.World, cell);
 		}
 
+		void ISaveActor.SaveActor(Actor self, TypeDictionary dict)
+		{
+			dict.Add(new CenterPositionInit(CenterPosition));
+			dict.Add(new SubCellInit(ToSubCell));
+			dict.Add(new FacingInit(Facing));
+		}
+
 		#endregion
 
 		#region Local IPositionable-related

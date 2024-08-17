@@ -11,7 +11,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using OpenRA.Graphics;
@@ -24,7 +23,7 @@ namespace OpenRA.Mods.Common.Graphics
 		public readonly int BgraSheetSize = 2048;
 		public readonly int IndexedSheetSize = 2048;
 
-		static readonly MiniYaml NoData = new(null);
+		static readonly MiniYaml NoData = new(string.Empty);
 
 		public DefaultSpriteSequenceLoader(ModData modData)
 		{
@@ -45,8 +44,7 @@ namespace OpenRA.Mods.Common.Graphics
 		int ISpriteSequenceLoader.BgraSheetSize => BgraSheetSize;
 		int ISpriteSequenceLoader.IndexedSheetSize => IndexedSheetSize;
 
-		IReadOnlyDictionary<string, ISpriteSequence> ISpriteSequenceLoader.ParseSequences(
-			ModData modData, string tileset, SpriteCache cache, MiniYamlNode imageNode)
+		Dictionary<string, ISpriteSequence> ISpriteSequenceLoader.ParseSequences(ModData modData, string tileset, SpriteCache cache, MiniYamlNode imageNode)
 		{
 			var sequences = new Dictionary<string, ISpriteSequence>();
 			var node = imageNode.Value.NodeWithKeyOrDefault("Defaults");
@@ -70,7 +68,7 @@ namespace OpenRA.Mods.Common.Graphics
 				}
 			}
 
-			return new ReadOnlyDictionary<string, ISpriteSequence>(sequences);
+			return new Dictionary<string, ISpriteSequence>(sequences);
 		}
 	}
 
@@ -205,7 +203,7 @@ namespace OpenRA.Mods.Common.Graphics
 		[Desc("X, Y offset to apply to the depth sprite.")]
 		protected static readonly SpriteSequenceField<float2> DepthSpriteOffset = new(nameof(DepthSpriteOffset), float2.Zero);
 
-		protected static readonly MiniYaml NoData = new(null);
+		protected static readonly MiniYaml NoData = new(string.Empty);
 		protected static readonly int[] FirstFrame = { 0 };
 
 		protected readonly ISpriteSequenceLoader Loader;

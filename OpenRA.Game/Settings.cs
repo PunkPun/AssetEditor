@@ -177,6 +177,12 @@ namespace OpenRA
 
 		[Desc("Throw an exception if the world sync hash changes while evaluating BotModules.")]
 		public bool SyncCheckBotModuleCode = false;
+
+		[Desc("Enable automatic ruleset when changed externally.")]
+		public bool EnableRulesetAutoReload = false;
+
+		[Desc("Recreate actors after ruleset is reloaded.")]
+		public bool RecreateActorsAfterRulesetReload = true;
 	}
 
 	public class GraphicSettings
